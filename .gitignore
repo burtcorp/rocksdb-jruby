@@ -3,6 +3,6 @@
 /vendor
 /Gemfile.lock
 /ext/target
-/lib/jmespath/ext
+/lib/rocks_db/ext
 /tmp
 /pkg
