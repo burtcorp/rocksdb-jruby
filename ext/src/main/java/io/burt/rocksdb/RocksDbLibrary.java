@@ -1,21 +1,22 @@
 package io.burt.rocksdb;
 
+import org.rocksdb.RocksDB;
+
 import org.jruby.Ruby;
 import org.jruby.RubyModule;
 import org.jruby.RubyClass;
-import org.jruby.RubyString;
-import org.jruby.RubyNil;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyHash;
 import org.jruby.runtime.load.Library;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Block;
-import org.jruby.runtime.Visibility;
-import org.jruby.anno.JRubyModule;
-import org.jruby.anno.JRubyMethod;
 
 public class RocksDbLibrary implements Library {
   public void load(Ruby ruby, boolean wrap) {
+    RocksDB.loadLibrary();
+    RubyModule rocksDbModule = RocksDb.install(ruby);
+    Db.install(ruby, rocksDbModule);
+    installErrors(ruby, rocksDbModule);
+  }
+
+  private void installErrors(Ruby ruby, RubyModule parentModule) {
+    RubyClass standardErrorClass = ruby.getStandardError();
+    RubyClass rocksDbPathError = parentModule.defineClassUnder("Error", standardErrorClass, standardErrorClass.getAllocator());
   }
 }
