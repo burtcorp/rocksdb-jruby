@@ -98,12 +98,6 @@ describe RocksDb do
       it 'doesn\'t complain when deleting things that don\'t exist' do
         expect { db.delete('some') }.to_not raise_error
       end
-
-      it 'has an alias #remove for #delete' do
-        db.put('some', 'value')
-        db.remove('some')
-        expect(db.get('some')).to be_nil
-      end
     end
 
     describe '#batch' do

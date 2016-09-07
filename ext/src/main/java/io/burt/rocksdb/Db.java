@@ -75,7 +75,7 @@ public class Db extends RubyObject {
     }
   }
 
-  @JRubyMethod(alias = { "remove" })
+  @JRubyMethod
   public IRubyObject delete(ThreadContext ctx, IRubyObject key) {
     if (key.isNil()) {
       throw ctx.runtime.newArgumentError("key can not be nil");
