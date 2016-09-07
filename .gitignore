@@ -3,6 +3,9 @@
 /vendor
 /Gemfile.lock
 /ext/target
+/ext/.classpath
+/ext/.project
+/ext/.settings
 /lib/rocks_db/ext
 /tmp
 /pkg

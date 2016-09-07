@@ -39,14 +39,14 @@ describe RocksDb do
   end
 
   describe '.repair' do
-    it 'repairs the DB at a path' do
+    it 'repairs the DB at a path', :pending do
       RocksDb.open(db_path).close
       RocksDb.repair(db_path)
     end
   end
 
   describe '.destroy' do
-    it 'destroys the DB at a path' do
+    it 'destroys the DB at a path', :pending do
       RocksDb.open(db_path).close
       RocksDb.destroy(db_path)
       expect(Dir.entries('.')).to_not include('hello_world')
@@ -64,10 +64,8 @@ describe RocksDb do
 
     describe '#close' do
       it 'closes the database' do
-        db = double(:db)
-        db.stub(:close)
-        RocksDb::Db.new(db).close
-        db.should have_received(:close)
+        db.close
+        expect { RocksDb.open(db_path) }.to_not raise_error
       end
     end
 
@@ -99,6 +97,12 @@ describe RocksDb do
 
       it 'doesn\'t complain when deleting things that don\'t exist' do
         expect { db.delete('some') }.to_not raise_error
+      end
+
+      it 'has an alias #remove for #delete' do
+        db.put('some', 'value')
+        db.remove('some')
+        expect(db.get('some')).to be_nil
       end
     end
 
