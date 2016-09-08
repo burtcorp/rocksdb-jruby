@@ -40,7 +40,7 @@ describe RocksDb do
 
     context 'when disabling the create_if_missing option' do
       it 'complains if the database doesn\'t exist' do
-        expect { RocksDb.open(db_path, create_if_missing: false) }.to raise_error(RocksDb::Error)
+        expect { RocksDb.open(db_path, create_if_missing: false) }.to raise_error(RocksDb::InvalidArgumentError)
       end
     end
 
@@ -48,7 +48,7 @@ describe RocksDb do
       it 'complains if the database exists' do
         db = RocksDb.open(db_path)
         db.close
-        expect { RocksDb.open(db_path, error_if_exists: true) }.to raise_error(RocksDb::Error)
+        expect { RocksDb.open(db_path, error_if_exists: true) }.to raise_error(RocksDb::InvalidArgumentError)
       end
     end
 

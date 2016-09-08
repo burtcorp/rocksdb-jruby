@@ -24,12 +24,14 @@ public class RocksDb {
   }
 
   static RaiseException createError(Ruby runtime, RocksDBException rdbe) {
-    RubyClass errorClass;
-    if (rdbe.getMessage().startsWith("IO error:")) {
-      errorClass = (RubyClass) runtime.getClassFromPath("RocksDb::IoError");
-    } else {
-      errorClass = (RubyClass) runtime.getClassFromPath("RocksDb::Error");
+    String msg = rdbe.getMessage();
+    String errorType = "RocksDb::Error";
+    if (msg.startsWith("IO error:")) {
+      errorType = "RocksDb::IoError";
+    } else if (msg.contains("does not exist (create_if_missing") || msg.contains("exists (error_if_exists")) {
+      errorType = "RocksDb::InvalidArgumentError";
     }
+    RubyClass errorClass = (RubyClass) runtime.getClassFromPath(errorType);
     throw runtime.newRaiseException(errorClass, rdbe.getMessage());
   }
 

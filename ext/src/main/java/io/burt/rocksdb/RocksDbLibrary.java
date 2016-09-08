@@ -22,5 +22,6 @@ public class RocksDbLibrary implements Library {
     RubyClass standardErrorClass = ruby.getStandardError();
     RubyClass errorClass = parentModule.defineClassUnder("Error", standardErrorClass, standardErrorClass.getAllocator());
     parentModule.defineClassUnder("IoError", errorClass, standardErrorClass.getAllocator());
+    parentModule.defineClassUnder("InvalidArgumentError", errorClass, standardErrorClass.getAllocator());
   }
 }
