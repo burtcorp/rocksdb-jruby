@@ -44,6 +44,7 @@ public class Snapshot extends RubyObject {
   public IRubyObject close(ThreadContext ctx) {
     snapshot.close();
     options.close();
+    db.releaseSnapshot(snapshot);
     return ctx.runtime.getNil();
   }
 
