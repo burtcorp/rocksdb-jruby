@@ -58,7 +58,7 @@ public class Iterator extends RubyObject {
     byte[] to = null;
     int limit = -1;
     boolean reverse = false;
-    if (scanOptions != null && !scanOptions.isNil()) {
+    if (scanOptions != null) {
       IRubyObject scanFrom = scanOptions.fastARef(runtime.newSymbol("from"));
       if (scanFrom != null && !scanFrom.isNil()) {
         from = scanFrom.asString().getBytes();
