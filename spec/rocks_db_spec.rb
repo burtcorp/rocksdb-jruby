@@ -146,7 +146,7 @@ describe RocksDb do
         called = false
         empty_db = RocksDb.open("#{db_path}_empty")
         empty_db.each { |k, v| called = true }
-        expect(called).to be_false
+        expect(called).to be_falsy
         empty_db.close
       end
 
@@ -240,9 +240,9 @@ describe RocksDb do
         it 'supports #next? to avoid raising StopIteration' do
           enum = db.each(from: 'three', limit: 2)
           enum.next
-          expect(enum.next?).to be_true
+          expect(enum.next?).to be_truthy
           enum.next
-          expect(enum.next?).to be_false
+          expect(enum.next?).to be_falsy
         end
 
         it 'is rewindable' do
@@ -258,7 +258,7 @@ describe RocksDb do
           called = false
           enum = db.each(from: 'three', limit: 2)
           transformed = enum.map { |k, v| called = true; v }.map { |v| v.to_i * 2 }
-          expect(called).to be_false
+          expect(called).to be_falsy
           transformed.each { }
           expect(called).to be_true
         end
@@ -267,7 +267,7 @@ describe RocksDb do
           called = false
           enum = db.each(from: 'three', limit: 2)
           filtered = enum.select { |k, v| called = true; v == '3' }.select { |k, v| true }
-          expect(called).to be_false
+          expect(called).to be_falsy
           filtered.each { }
           expect(called).to be_true
         end
