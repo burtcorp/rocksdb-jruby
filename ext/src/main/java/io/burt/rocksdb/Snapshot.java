@@ -71,7 +71,7 @@ public class Snapshot extends RubyObject {
   @JRubyMethod(optional = 1)
   public IRubyObject each(ThreadContext ctx, IRubyObject[] args, Block block) {
     RubyHash scanOptions = args.length > 0 ? args[0].convertToHash() : null;
-    Cursor cursor = Cursor.create(ctx.runtime, db, readOptions, scanOptions);
+    Iterator cursor = Iterator.create(ctx.runtime, db, readOptions, scanOptions);
     if (block.isGiven()) {
       cursor.each(ctx, block);
     }

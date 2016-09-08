@@ -21,8 +21,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
 @SuppressWarnings("serial")
-@JRubyClass(name = "RocksDb::Cursor")
-public class Cursor extends RubyObject {
+@JRubyClass(name = "RocksDb::Iterator")
+public class Iterator extends RubyObject {
   private final RocksDB db;
   private final ReadOptions readOptions;
   private final byte[] from;
@@ -36,7 +36,7 @@ public class Cursor extends RubyObject {
   private Slice endSlice;
   private int remaining;
 
-  public Cursor(Ruby runtime, RubyClass cls, RocksDB db, ReadOptions readOptions, byte[] from, byte[] to, int limit, boolean reverse) {
+  public Iterator(Ruby runtime, RubyClass cls, RocksDB db, ReadOptions readOptions, byte[] from, byte[] to, int limit, boolean reverse) {
     super(runtime, cls);
     this.db = db;
     this.readOptions = readOptions;
@@ -47,13 +47,13 @@ public class Cursor extends RubyObject {
   }
 
   static RubyClass install(Ruby runtime, RubyModule parentModule) {
-    RubyClass scannerClass = parentModule.defineClassUnder("Cursor", runtime.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
-    scannerClass.defineAnnotatedMethods(Cursor.class);
+    RubyClass scannerClass = parentModule.defineClassUnder("Iterator", runtime.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
+    scannerClass.defineAnnotatedMethods(Iterator.class);
     scannerClass.includeModule(runtime.getEnumerable());
     return scannerClass;
   }
 
-  static Cursor create(Ruby runtime, RocksDB db, ReadOptions readOptions, RubyHash scanOptions) {
+  static Iterator create(Ruby runtime, RocksDB db, ReadOptions readOptions, RubyHash scanOptions) {
     byte[] from = null;
     byte[] to = null;
     int limit = -1;
@@ -77,8 +77,8 @@ public class Cursor extends RubyObject {
     return create(runtime, db, readOptions, from, to, limit, reverse);
   }
   
-  static Cursor create(Ruby runtime, RocksDB db, ReadOptions readOptions, byte[] from, byte[] to, int limit, boolean reverse) {
-    return new Cursor(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Cursor"), db, readOptions, from, to, limit, reverse);
+  static Iterator create(Ruby runtime, RocksDB db, ReadOptions readOptions, byte[] from, byte[] to, int limit, boolean reverse) {
+    return new Iterator(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Iterator"), db, readOptions, from, to, limit, reverse);
   }
 
   private void internalRewind() {

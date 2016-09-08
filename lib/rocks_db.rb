@@ -8,7 +8,7 @@ require 'rocks_db/version'
 require 'rocks_db/lazy_enumerable'
 
 module RocksDb
-  class Cursor
+  class Iterator
     include LazyEnumerable
   end
 end
