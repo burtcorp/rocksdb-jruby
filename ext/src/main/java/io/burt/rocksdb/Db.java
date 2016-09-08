@@ -21,7 +21,7 @@ import org.jruby.util.ByteList;
 
 @SuppressWarnings("serial")
 @JRubyClass(name = "RocksDb::Db")
-public class Db extends RubyObject {
+public class Db extends RubyObject implements AutoCloseable {
   private final RocksDB db;
 
   public Db(Ruby runtime, RubyClass cls, RocksDB db) {
@@ -39,9 +39,18 @@ public class Db extends RubyObject {
     return new Db(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Db"), db);
   }
 
-  @JRubyMethod
-  public IRubyObject close(ThreadContext ctx) {
+  private void internalClose() {
     db.close();
+  }
+
+  @Override
+  public void close() {
+    internalClose();
+  }
+
+  @JRubyMethod(name = "close")
+  public IRubyObject closeRb(ThreadContext ctx) {
+    internalClose();
     return ctx.runtime.getNil();
   }
 

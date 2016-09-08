@@ -20,6 +20,7 @@ public class RocksDbLibrary implements Library {
 
   private void installErrors(Ruby ruby, RubyModule parentModule) {
     RubyClass standardErrorClass = ruby.getStandardError();
-    parentModule.defineClassUnder("Error", standardErrorClass, standardErrorClass.getAllocator());
+    RubyClass errorClass = parentModule.defineClassUnder("Error", standardErrorClass, standardErrorClass.getAllocator());
+    parentModule.defineClassUnder("IoError", errorClass, standardErrorClass.getAllocator());
   }
 }

@@ -10,6 +10,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -20,6 +21,16 @@ public class RocksDb {
     RubyModule rocksDbModule = runtime.defineModule("RocksDb");
     rocksDbModule.defineAnnotatedMethods(RocksDb.class);
     return rocksDbModule;
+  }
+
+  static RaiseException createError(Ruby runtime, RocksDBException rdbe) {
+    RubyClass errorClass;
+    if (rdbe.getMessage().startsWith("IO error:")) {
+      errorClass = (RubyClass) runtime.getClassFromPath("RocksDb::IoError");
+    } else {
+      errorClass = (RubyClass) runtime.getClassFromPath("RocksDb::Error");
+    }
+    throw runtime.newRaiseException(errorClass, rdbe.getMessage());
   }
 
   @JRubyMethod(module = true, required = 1, optional = 1)
@@ -38,15 +49,17 @@ public class RocksDb {
       RocksDB rocksDb = RocksDB.open(options, args[0].asJavaString());
       Db db = Db.create(ctx.runtime, rocksDb);
       if (block.isGiven()) {
-        block.yield(ctx, db);
-        db.close(ctx);
+        try {
+          block.yield(ctx, db);
+        } finally {
+          db.close();
+        }
         return ctx.runtime.getNil();
       } else {
         return db;
       }
     } catch (RocksDBException rdbe) {
-      RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
-      throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+      throw createError(ctx.runtime, rdbe);
     }
   }
 }

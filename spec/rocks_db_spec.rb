@@ -51,6 +51,17 @@ describe RocksDb do
         expect { RocksDb.open(db_path, error_if_exists: true) }.to raise_error(RocksDb::Error)
       end
     end
+
+    context 'when opening an already open database' do
+      it 'raises an IO error' do
+        db = RocksDb.open(db_path)
+        begin
+          expect { RocksDb.open(db_path) }.to raise_error(RocksDb::IoError)
+        ensure
+          db.close
+        end
+      end
+    end
   end
 
   describe '.repair' do
