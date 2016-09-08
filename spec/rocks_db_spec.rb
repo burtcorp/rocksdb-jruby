@@ -260,7 +260,7 @@ describe RocksDb do
           transformed = enum.map { |k, v| called = true; v }.map { |v| v.to_i * 2 }
           expect(called).to be_falsy
           transformed.each { }
-          expect(called).to be_true
+          expect(called).to be_truthy
         end
 
         it 'supports lazy #select' do
@@ -269,7 +269,7 @@ describe RocksDb do
           filtered = enum.select { |k, v| called = true; v == '3' }.select { |k, v| true }
           expect(called).to be_falsy
           filtered.each { }
-          expect(called).to be_true
+          expect(called).to be_truthy
         end
       end
     end
