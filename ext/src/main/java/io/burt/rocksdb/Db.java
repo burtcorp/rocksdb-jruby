@@ -1,5 +1,6 @@
 package io.burt.rocksdb;
 
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
@@ -121,31 +122,11 @@ public class Db extends RubyObject {
 
   @JRubyMethod(optional = 1)
   public IRubyObject each(ThreadContext ctx, IRubyObject[] args, Block block) {
-    byte[] from = null;
-    byte[] to = null;
-    int limit = -1;
-    boolean reverse = false;
-    if (args.length > 0 && !args[0].isNil()) {
-      RubyHash scanOptions = args[0].convertToHash();
-      IRubyObject scanFrom = scanOptions.fastARef(ctx.runtime.newSymbol("from"));
-      if (scanFrom != null && !scanFrom.isNil()) {
-        from = scanFrom.asString().getBytes();
-      }
-      IRubyObject scanTo = scanOptions.fastARef(ctx.runtime.newSymbol("to"));
-      if (scanTo != null && !scanTo.isNil()) {
-        to = scanTo.asString().getBytes();
-      }
-      IRubyObject scanLimit = scanOptions.fastARef(ctx.runtime.newSymbol("limit"));
-      if (scanLimit != null && !scanLimit.isNil()) {
-        limit = (int) scanLimit.convertToInteger().getLongValue();
-      }
-      IRubyObject scanReverse = scanOptions.fastARef(ctx.runtime.newSymbol("reverse"));
-      reverse = scanReverse != null && scanReverse.isTrue();
-    }
-    Cursor scanner = Cursor.create(ctx.runtime, db, from, to, limit, reverse);
+    RubyHash scanOptions = args.length > 0 ? args[0].convertToHash() : null;
+    Cursor cursor = Cursor.create(ctx.runtime, db, new ReadOptions(), scanOptions);
     if (block.isGiven()) {
-      scanner.each(ctx, block);
+      cursor.each(ctx, block);
     }
-    return scanner;
+    return cursor;
   }
 }

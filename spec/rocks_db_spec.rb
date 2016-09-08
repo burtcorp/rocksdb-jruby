@@ -118,16 +118,36 @@ describe RocksDb do
       it 'creates a view of the database at a specific point in time' do
         db.put('one', '1')
         snapshot = db.snapshot
-        db.put('one', '3')
-        expect(snapshot.get('one')).to eq('1')
-        expect(db.get('one')).to eq('3')
-        snapshot.close
+        begin
+          db.put('one', '3')
+          expect(snapshot.get('one')).to eq('1')
+          expect(db.get('one')).to eq('3')
+        ensure
+          snapshot.close
+        end
       end
 
       it 'yields the snapshot when a block is given' do
         db.put('one', '1')
         db.snapshot do |snapshot|
           expect(snapshot.get('one')).to eq('1')
+        end
+      end
+
+      it 'allows iteration over the view' do
+        db.put('one', '1')
+        db.put('two', '2')
+        snapshot = db.snapshot
+        begin
+          db.put('one', '3')
+          db.put('three', '3')
+          values = []
+          snapshot.each do |key, value|
+            values << value
+          end
+          expect(values).to eq(%w[1 2])
+        ensure
+          snapshot.close
         end
       end
     end

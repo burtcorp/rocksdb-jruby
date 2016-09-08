@@ -1,12 +1,15 @@
 package io.burt.rocksdb;
 
 import org.rocksdb.ComparatorOptions;
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.Slice;
 import org.rocksdb.util.BytewiseComparator;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
@@ -21,6 +24,7 @@ import org.jruby.util.ByteList;
 @JRubyClass(name = "RocksDb::Cursor")
 public class Cursor extends RubyObject {
   private final RocksDB db;
+  private final ReadOptions readOptions;
   private final byte[] from;
   private final byte[] to;
   private final int limit;
@@ -32,9 +36,10 @@ public class Cursor extends RubyObject {
   private Slice endSlice;
   private int remaining;
 
-  public Cursor(Ruby runtime, RubyClass cls, RocksDB db, byte[] from, byte[] to, int limit, boolean reverse) {
+  public Cursor(Ruby runtime, RubyClass cls, RocksDB db, ReadOptions readOptions, byte[] from, byte[] to, int limit, boolean reverse) {
     super(runtime, cls);
     this.db = db;
+    this.readOptions = readOptions;
     this.from = from;
     this.to = to;
     this.limit = limit;
@@ -48,13 +53,37 @@ public class Cursor extends RubyObject {
     return scannerClass;
   }
 
-  static Cursor create(Ruby runtime, RocksDB db, byte[] from, byte[] to, int limit, boolean reverse) {
-    return new Cursor(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Cursor"), db, from, to, limit, reverse);
+  static Cursor create(Ruby runtime, RocksDB db, ReadOptions readOptions, RubyHash scanOptions) {
+    byte[] from = null;
+    byte[] to = null;
+    int limit = -1;
+    boolean reverse = false;
+    if (scanOptions != null && !scanOptions.isNil()) {
+      IRubyObject scanFrom = scanOptions.fastARef(runtime.newSymbol("from"));
+      if (scanFrom != null && !scanFrom.isNil()) {
+        from = scanFrom.asString().getBytes();
+      }
+      IRubyObject scanTo = scanOptions.fastARef(runtime.newSymbol("to"));
+      if (scanTo != null && !scanTo.isNil()) {
+        to = scanTo.asString().getBytes();
+      }
+      IRubyObject scanLimit = scanOptions.fastARef(runtime.newSymbol("limit"));
+      if (scanLimit != null && !scanLimit.isNil()) {
+        limit = (int) scanLimit.convertToInteger().getLongValue();
+      }
+      IRubyObject scanReverse = scanOptions.fastARef(runtime.newSymbol("reverse"));
+      reverse = scanReverse != null && scanReverse.isTrue();
+    }
+    return create(runtime, db, readOptions, from, to, limit, reverse);
+  }
+  
+  static Cursor create(Ruby runtime, RocksDB db, ReadOptions readOptions, byte[] from, byte[] to, int limit, boolean reverse) {
+    return new Cursor(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Cursor"), db, readOptions, from, to, limit, reverse);
   }
 
   private void internalRewind() {
     internalClose();
-    iterator = db.newIterator();
+    iterator = db.newIterator(readOptions);
     comparatorOptions = new ComparatorOptions();
     comparator = new BytewiseComparator(comparatorOptions);
     remaining = limit < 0 ? Integer.MAX_VALUE : limit;

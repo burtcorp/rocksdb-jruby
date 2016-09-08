@@ -6,10 +6,12 @@ import org.rocksdb.RocksDBException;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -20,14 +22,14 @@ import org.jruby.util.ByteList;
 public class Snapshot extends RubyObject {
   private final RocksDB db;
   private final org.rocksdb.Snapshot snapshot;
-  private final ReadOptions options;
+  private final ReadOptions readOptions;
 
   public Snapshot(Ruby runtime, RubyClass cls, RocksDB db) {
     super(runtime, cls);
     this.db = db;
     this.snapshot = db.getSnapshot();
-    this.options = new ReadOptions();
-    this.options.setSnapshot(snapshot);
+    this.readOptions = new ReadOptions();
+    this.readOptions.setSnapshot(snapshot);
   }
 
   static RubyClass install(Ruby runtime, RubyModule parentModule) {
@@ -43,7 +45,7 @@ public class Snapshot extends RubyObject {
   @JRubyMethod
   public IRubyObject close(ThreadContext ctx) {
     snapshot.close();
-    options.close();
+    readOptions.close();
     db.releaseSnapshot(snapshot);
     return ctx.runtime.getNil();
   }
@@ -54,7 +56,7 @@ public class Snapshot extends RubyObject {
       throw ctx.runtime.newArgumentError("key can not be nil");
     }
     try {
-      byte[] value = db.get(options, key.asString().getBytes());
+      byte[] value = db.get(readOptions, key.asString().getBytes());
       if (value == null) {
         return ctx.runtime.getNil();
       } else {
@@ -64,5 +66,15 @@ public class Snapshot extends RubyObject {
       RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
       throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
     }
+  }
+
+  @JRubyMethod(optional = 1)
+  public IRubyObject each(ThreadContext ctx, IRubyObject[] args, Block block) {
+    RubyHash scanOptions = args.length > 0 ? args[0].convertToHash() : null;
+    Cursor cursor = Cursor.create(ctx.runtime, db, readOptions, scanOptions);
+    if (block.isGiven()) {
+      cursor.each(ctx, block);
+    }
+    return cursor;
   }
 }
