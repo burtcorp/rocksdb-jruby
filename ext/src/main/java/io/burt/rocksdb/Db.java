@@ -2,6 +2,8 @@ package io.burt.rocksdb;
 
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -9,6 +11,7 @@ import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -86,6 +89,20 @@ public class Db extends RubyObject {
     } catch (RocksDBException rdbe) {
       RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
       throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+    }
+  }
+
+  @JRubyMethod
+  public IRubyObject batch(ThreadContext ctx, Block block) {
+    try (WriteBatch batch = new WriteBatch()) {
+      block.yield(ctx, Batch.create(ctx.runtime, batch));
+      try (WriteOptions options = new WriteOptions()) {
+        db.write(options, batch);
+        return ctx.runtime.getNil();
+      } catch (RocksDBException rdbe) {
+        RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
+        throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+      }
     }
   }
 }
