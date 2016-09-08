@@ -35,7 +35,7 @@ public class Db extends RubyObject {
     return dbClass;
   }
 
-  static IRubyObject create(Ruby runtime, RocksDB db) {
+  static Db create(Ruby runtime, RocksDB db) {
     return new Db(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Db"), db);
   }
 

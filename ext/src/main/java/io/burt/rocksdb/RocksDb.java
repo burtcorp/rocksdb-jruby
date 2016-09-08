@@ -10,6 +10,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -22,7 +23,7 @@ public class RocksDb {
   }
 
   @JRubyMethod(module = true, required = 1, optional = 1)
-  public static IRubyObject open(ThreadContext ctx, IRubyObject recv, IRubyObject[] args) {
+  public static IRubyObject open(ThreadContext ctx, IRubyObject recv, IRubyObject[] args, Block block) {
     Options options = new Options();
     options.setCreateIfMissing(true);
     options.setErrorIfExists(false);
@@ -34,8 +35,15 @@ public class RocksDb {
       options.setErrorIfExists(errorIfExists != null && errorIfExists.isTrue());
     }
     try {
-      RocksDB db = RocksDB.open(options, args[0].asJavaString());
-      return Db.create(ctx.runtime, db);
+      RocksDB rocksDb = RocksDB.open(options, args[0].asJavaString());
+      Db db = Db.create(ctx.runtime, rocksDb);
+      if (block.isGiven()) {
+        block.yield(ctx, db);
+        db.close(ctx);
+        return ctx.runtime.getNil();
+      } else {
+        return db;
+      }
     } catch (RocksDBException rdbe) {
       RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
       throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());

@@ -23,6 +23,21 @@ describe RocksDb do
       RocksDb.open(db_path)
     end
 
+    context 'when given a block' do
+      it 'yields the database and closes it when the block returns' do
+        RocksDb.open(db_path) do |db|
+          db.put('hello', 'world')
+        end
+        value = nil
+        expect {
+          RocksDb.open(db_path) do |db|
+            value = db.get('hello')
+          end
+        }.to_not raise_error
+        expect(value).to eq('world')
+      end
+    end
+
     context 'when disabling the create_if_missing option' do
       it 'complains if the database doesn\'t exist' do
         expect { RocksDb.open(db_path, create_if_missing: false) }.to raise_error(RocksDb::Error)
