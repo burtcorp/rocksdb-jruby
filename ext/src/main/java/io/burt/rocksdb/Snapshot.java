@@ -63,8 +63,7 @@ public class Snapshot extends RubyObject {
         return ctx.runtime.newString(new ByteList(value));
       }
     } catch (RocksDBException rdbe) {
-      RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
-      throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+      throw RocksDb.createError(ctx.runtime, rdbe);
     }
   }
 

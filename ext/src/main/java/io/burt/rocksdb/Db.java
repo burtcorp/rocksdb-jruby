@@ -66,8 +66,7 @@ public class Db extends RubyObject implements AutoCloseable {
       db.put(key.asString().getBytes(), value.asString().getBytes());
       return ctx.runtime.getNil();
     } catch (RocksDBException rdbe) {
-      RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
-      throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+      throw RocksDb.createError(ctx.runtime, rdbe);
     }
   }
 
@@ -84,8 +83,7 @@ public class Db extends RubyObject implements AutoCloseable {
         return ctx.runtime.newString(new ByteList(value));
       }
     } catch (RocksDBException rdbe) {
-      RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
-      throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+      throw RocksDb.createError(ctx.runtime, rdbe);
     }
   }
 
@@ -98,8 +96,7 @@ public class Db extends RubyObject implements AutoCloseable {
       db.remove(key.asString().getBytes());
       return ctx.runtime.getNil();
     } catch (RocksDBException rdbe) {
-      RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
-      throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+      throw RocksDb.createError(ctx.runtime, rdbe);
     }
   }
 
@@ -111,8 +108,7 @@ public class Db extends RubyObject implements AutoCloseable {
         db.write(options, batch);
         return ctx.runtime.getNil();
       } catch (RocksDBException rdbe) {
-        RubyClass errorClass = (RubyClass) ctx.runtime.getClassFromPath("RocksDb::Error");
-        throw ctx.runtime.newRaiseException(errorClass, rdbe.getMessage());
+        throw RocksDb.createError(ctx.runtime, rdbe);
       }
     }
   }
