@@ -123,6 +123,13 @@ describe RocksDb do
         expect(db.get('one')).to eq('3')
         snapshot.close
       end
+
+      it 'yields the snapshot when a block is given' do
+        db.put('one', '1')
+        db.snapshot do |snapshot|
+          expect(snapshot.get('one')).to eq('1')
+        end
+      end
     end
 
     describe '#each' do

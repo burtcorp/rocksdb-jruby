@@ -36,7 +36,7 @@ public class Snapshot extends RubyObject {
     return snapshotClass;
   }
 
-  static IRubyObject create(Ruby runtime, RocksDB db) {
+  static Snapshot create(Ruby runtime, RocksDB db) {
     return new Snapshot(runtime, (RubyClass) runtime.getClassFromPath("RocksDb::Snapshot"), db);
   }
 
