@@ -28,7 +28,7 @@ public class RocksDb {
     options.setCreateIfMissing(true);
     options.setErrorIfExists(false);
     if (args.length > 1) {
-      RubyHash openOptions = (RubyHash) args[1];
+      RubyHash openOptions = args[1].convertToHash();
       IRubyObject createIfMissing = openOptions.fastARef(ctx.runtime.newSymbol("create_if_missing"));
       options.setCreateIfMissing(createIfMissing != null && createIfMissing.isTrue());
       IRubyObject errorIfExists = openOptions.fastARef(ctx.runtime.newSymbol("error_if_exists"));
