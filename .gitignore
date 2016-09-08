@@ -1,5 +1,7 @@
 /.bundle
 /.ruby-version
+/.yardoc
+/doc
 /vendor
 /Gemfile.lock
 /ext/target

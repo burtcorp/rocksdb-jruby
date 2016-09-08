@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 module RocksDb
+  # @private
   module LazyEnumerable
     include Enumerable
 
@@ -13,6 +14,7 @@ module RocksDb
     end
   end
 
+  # @private
   class LazyMap
     include LazyEnumerable
 
@@ -31,6 +33,7 @@ module RocksDb
     end
   end
 
+  # @private
   class LazySelect
     include LazyEnumerable
 
