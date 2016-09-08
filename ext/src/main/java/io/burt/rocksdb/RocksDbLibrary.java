@@ -13,6 +13,7 @@ public class RocksDbLibrary implements Library {
     RubyModule rocksDbModule = RocksDb.install(ruby);
     Db.install(ruby, rocksDbModule);
     Batch.install(ruby, rocksDbModule);
+    Snapshot.install(ruby, rocksDbModule);
     installErrors(ruby, rocksDbModule);
   }
 

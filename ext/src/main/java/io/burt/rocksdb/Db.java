@@ -105,4 +105,9 @@ public class Db extends RubyObject {
       }
     }
   }
+
+  @JRubyMethod
+  public IRubyObject snapshot(ThreadContext ctx) {
+    return Snapshot.create(ctx.runtime, db);
+  }
 }
