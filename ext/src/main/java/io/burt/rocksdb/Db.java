@@ -7,6 +7,7 @@ import org.rocksdb.WriteOptions;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
@@ -109,5 +110,35 @@ public class Db extends RubyObject {
   @JRubyMethod
   public IRubyObject snapshot(ThreadContext ctx) {
     return Snapshot.create(ctx.runtime, db);
+  }
+
+  @JRubyMethod(optional = 1)
+  public IRubyObject each(ThreadContext ctx, IRubyObject[] args, Block block) {
+    byte[] from = null;
+    byte[] to = null;
+    int limit = -1;
+    boolean reverse = false;
+    if (args.length > 0 && !args[0].isNil()) {
+      RubyHash scanOptions = args[0].convertToHash();
+      IRubyObject scanFrom = scanOptions.fastARef(ctx.runtime.newSymbol("from"));
+      if (scanFrom != null && !scanFrom.isNil()) {
+        from = scanFrom.asString().getBytes();
+      }
+      IRubyObject scanTo = scanOptions.fastARef(ctx.runtime.newSymbol("to"));
+      if (scanTo != null && !scanTo.isNil()) {
+        to = scanTo.asString().getBytes();
+      }
+      IRubyObject scanLimit = scanOptions.fastARef(ctx.runtime.newSymbol("limit"));
+      if (scanLimit != null && !scanLimit.isNil()) {
+        limit = (int) scanLimit.convertToInteger().getLongValue();
+      }
+      IRubyObject scanReverse = scanOptions.fastARef(ctx.runtime.newSymbol("reverse"));
+      reverse = scanReverse != null && scanReverse.isTrue();
+    }
+    Cursor scanner = Cursor.create(ctx.runtime, db, from, to, limit, reverse);
+    if (block.isGiven()) {
+      scanner.each(ctx, block);
+    }
+    return scanner;
   }
 }
