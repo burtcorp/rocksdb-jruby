@@ -307,6 +307,12 @@ describe RocksDb do
           expect(enum.next).to eq(['two', '2'])
         end
 
+        it 'should be closed unless exhausted' do
+          enum = db.each(from: 'three', limit: 2)
+          enum.next
+          expect { enum.close }.to_not raise_error
+        end
+
         it 'supports lazy #map' do
           called = false
           enum = db.each(from: 'three', limit: 2)

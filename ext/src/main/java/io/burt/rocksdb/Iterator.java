@@ -22,7 +22,7 @@ import org.jruby.util.ByteList;
 
 @SuppressWarnings("serial")
 @JRubyClass(name = "RocksDb::Iterator")
-public class Iterator extends RubyObject {
+public class Iterator extends RubyObject implements AutoCloseable {
   private final RocksDB db;
   private final ReadOptions readOptions;
   private final byte[] from;
@@ -150,6 +150,17 @@ public class Iterator extends RubyObject {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public void close() {
+    internalClose();
+  }
+
+  @JRubyMethod(name = "close")
+  public IRubyObject closeRb(ThreadContext ctx) {
+    internalClose();
+    return ctx.runtime.getNil();
   }
 
   @JRubyMethod
