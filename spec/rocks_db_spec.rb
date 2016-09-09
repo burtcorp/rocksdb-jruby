@@ -332,5 +332,51 @@ describe RocksDb do
         end
       end
     end
+
+    describe '#flush' do
+      it 'flushes memtables to disk' do
+        db.put('foo', 'bar')
+        existing_sstables = Dir["#{db_path}/*.sst"]
+        db.flush
+        new_sstables = Dir["#{db_path}/*.sst"] - existing_sstables
+        expect(new_sstables).to_not be_empty
+      end
+
+      it 'can not wait for the flush to complete' do
+        expect { db.flush(wait: false) }.to_not raise_error
+      end
+    end
+
+    describe '#compact_range' do
+      context 'when given no arguments' do
+        it 'compacts the whole database' do
+          db.put('foo', 'bar')
+          db.flush
+          db.compact_range
+          expect(File.readlines("#{db_path}/LOG").grep(/Manual compaction starting/).size).to eq(1)
+        end
+      end
+
+      context 'when given a range' do
+        it 'compacts only that range' do
+          db.put('foo', 'bar')
+          db.flush
+          db.compact_range(from: 'fox', to: 'gox')
+          expect(File.readlines("#{db_path}/LOG").grep(/Manual compaction starting/)).to_not be_empty
+        end
+      end
+
+      context 'when given only a start' do
+        it 'raises an ArgumentError' do
+          expect { db.compact_range(from: 'fox') }.to raise_error(ArgumentError, /either none or both of :from and :to must be given/i)
+        end
+      end
+
+      context 'when given only an end' do
+        it 'raises an ArgumentError' do
+          expect { db.compact_range(to: 'gox') }.to raise_error(ArgumentError, /either none or both of :from and :to must be given/i)
+        end
+      end
+    end
   end
 end

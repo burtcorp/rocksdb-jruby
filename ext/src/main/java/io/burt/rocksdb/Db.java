@@ -1,5 +1,6 @@
 package io.burt.rocksdb;
 
+import org.rocksdb.FlushOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -11,6 +12,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
+import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
@@ -133,5 +135,51 @@ public class Db extends RubyObject implements AutoCloseable {
       cursor.each(ctx, block);
     }
     return cursor;
+  }
+
+  @JRubyMethod(optional = 1)
+  public IRubyObject flush(ThreadContext ctx, IRubyObject[] args) {
+    try (FlushOptions flushOptions = new FlushOptions()) {
+      if (args.length > 0) {
+        RubyHash options = args[0].convertToHash();
+        IRubyObject waitOption = options.fastARef(ctx.runtime.newSymbol("wait"));
+        if (waitOption != null) {
+          flushOptions.setWaitForFlush(waitOption.isTrue());
+        }
+      }
+      db.flush(flushOptions);
+      return ctx.runtime.getNil();
+    } catch (RocksDBException rdbe) {
+      throw RocksDb.createError(ctx.runtime, rdbe);
+    }
+  }
+
+  @JRubyMethod(name = "compact_range", optional = 1)
+  public IRubyObject compactRange(ThreadContext ctx, IRubyObject[] args) {
+    byte[] from = null;
+    byte[] to = null;
+    if (args.length > 0) {
+      RubyHash options = args[0].convertToHash();
+      RubySymbol fromKey = ctx.runtime.newSymbol("from");
+      RubySymbol toKey = ctx.runtime.newSymbol("to");
+      boolean hasFrom = options.has_key_p(fromKey).isTrue();
+      boolean hasTo = options.has_key_p(toKey).isTrue();
+      if (hasFrom ^ hasTo) {
+        throw ctx.runtime.newArgumentError("Either none or both of :from and :to must be given");
+      } else if (hasFrom && hasTo) {
+        from = options.fastARef(fromKey).asString().getBytes();
+        to = options.fastARef(toKey).asString().getBytes();
+      }
+    }
+    try {
+      if (from != null) {
+        db.compactRange(from, to);
+      } else {
+        db.compactRange();
+      }
+      return ctx.runtime.getNil();
+    } catch (RocksDBException rdbe) {
+      throw RocksDb.createError(ctx.runtime, rdbe);
+    }
   }
 }

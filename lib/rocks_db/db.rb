@@ -76,5 +76,13 @@ module RocksDb
     #   @yieldparam [String] value a value
     #   @return [Enumerable] an enumerable of the same keys and values as the
     #     call would have yielded if a block was given
+
+    # @!method compact_range(options={})
+    #   Compact the whole, or a range of the keyspace
+    #
+    #   @param [Hash] options
+    #   @option options [String] :from (nil) the start of the range to compact
+    #   @option options [String] :to (nil) the end of the range to compact
+    #   @return [nil]
   end
 end
